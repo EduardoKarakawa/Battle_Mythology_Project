@@ -13,7 +13,7 @@ void ofApp::setup(){
 void ofApp::update(){
 		SeeDirection(&player, &keys);
 		SeeAction(&player, &keys);
-
+		//sdrwasda
 }
 
 //--------------------------------------------------------------
