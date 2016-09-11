@@ -3,15 +3,18 @@
 #include "ofMain.h"
 #include <string>
 
-#define MAXSPEED 3
+#define MAXSPEED 10
+#define PLAYERATRITO 0.3f
+#define PLAYERSPEED 0.5f
 
 struct PlayerType {
 	ofImage Sprite;
-	int X, Y, Vida;
+	ofPoint posicao;
+	int Vida;
 	int Direcao = 1;
 	char Acao[9] = "idle";
 	int Frame, FPS;
-	float VelX, VelY, Speed = 0.09f;
+	float VelX, VelY;
 	bool Vivo;
 };
 
@@ -22,10 +25,18 @@ struct KeyInput {
 	bool Right = false;
 };
 
+struct BackgroundType {
+	ofPoint pos;
+	ofImage sprite;
+};
+
 
 
 class ofApp : public ofBaseApp{
 
+	ofPoint Mundo;
+	BackgroundType terreno;
+	BackgroundType decPilar;
 	KeyInput keys;
 	PlayerType player;
 	
@@ -91,6 +102,7 @@ class ofApp : public ofBaseApp{
 			}
 		}
 
+
 		void SeeAction(PlayerType *ply, KeyInput *tecla) {
 		//Funcao para gerenciar as acoes do player:
 		//andando, ataque1, ataque2, ataque3, levadano, dash
@@ -108,6 +120,7 @@ class ofApp : public ofBaseApp{
 
 		}
 
+
 		void Animation(PlayerType *ply, KeyInput *tecla) {
 		//Funcao que controla o load dos sprites do player, conforme a Acao e Direcao, alem de mudar os frames.
 			
@@ -123,32 +136,93 @@ class ofApp : public ofBaseApp{
 			//o jogador esta fazendo.
 			char anim[50];	//tudo sera juntado nessa variavel
 			snprintf(anim, sizeof(anim), "players/%s/%d/%d.png", ply->Acao,ply->Direcao, 0); //juntando tudo
-			std::cout << anim;
 			ply->Sprite.loadImage(anim);
 		}
 		
 
 		void SpeedPlayer(PlayerType *ply, KeyInput *tecla) {
+		//Funcao que incrementa 
 			if (ply->VelX < MAXSPEED && tecla->Right) {
-				ply->VelX+= ply->Speed;
+				ply->VelX+= PLAYERSPEED;
 			}
-			if (ply->Speed > -MAXSPEED && tecla->Left) {
-				ply->VelX -= ply->Speed;
+			if (ply->VelX > -MAXSPEED && tecla->Left) {
+				ply->VelX -= PLAYERSPEED;
 			}
-			if (ply->Speed > -MAXSPEED && tecla->Up) {
-				ply->VelY -= ply->Speed;
+			if (ply->VelY > -MAXSPEED && tecla->Up) {
+				ply->VelY -= PLAYERSPEED;
 			}
-			if (ply->Speed < MAXSPEED && tecla->Down) {
-				ply->VelY += ply->Speed;
+			if (ply->VelY < MAXSPEED && tecla->Down) {
+				ply->VelY += PLAYERSPEED;
 			}
 		}
 
-		void MovPlayer(PlayerType *ply, KeyInput *tecla) {
-			if (tecla->Left || tecla->Right){
-				ply->X += ply->VelX;
+
+		void Collision(PlayerType *ply, ofImage *imag) {
+			//if(ply->posicao.distance())
+		}
+
+
+		void MovPlayer(PlayerType *ply, KeyInput *tecla, ofPoint *mnd) {
+			SpeedPlayer(ply, tecla);
+				mnd->x += ply->VelX;
+				mnd->y += ply->VelY;
+				//ply->posicao.x += ply->VelX;
+				//ply->posicao.y += ply->VelY;
+				if (ply->Acao == "idle");
+					DecreVelo(ply);
+		}
+
+
+		void DecreVelo(PlayerType *ply) {
+			if (ply->VelX > 0) {
+				ply->VelX -= PLAYERATRITO;
+				if (ply->VelX < 0) {
+					ply->VelX = 0;
+				}
 			}
-			if (tecla->Up || tecla->Down) {
-				ply->Y += ply->VelY;
+			if (ply->VelX < 0) {
+				ply->VelX += PLAYERATRITO;
+				if (ply->VelX > 0) {
+					ply->VelX = 0;
+				}
+			}
+			if (ply->VelY > 0) {
+				ply->VelY -= PLAYERATRITO;
+				if (ply->VelY < 0) {
+					ply->VelY = 0;
+				}
+			}
+			if (ply->VelY < 0) {
+				ply->VelY += PLAYERATRITO;
+				if (ply->VelY > 0) {
+					ply->VelY = 0;
+				}
 			}
 		}
+
+
+		void RefreshWorld(BackgroundType *atualizando, int x, int y) {
+			atualizando->pos.x = atualizando->sprite.getWidth() / 2 - Mundo.x + x;
+			atualizando->pos.y = atualizando->sprite.getHeight() / 2 - Mundo.y + y;
+		}
 };
+//if (p->velX > 0) {
+//	p->velX -= p->atrito;
+//	if (p->velX < 0)
+//		p->velX = 0;
+//}
+//if (p->velX < 0) {
+//	p->velX += p->atrito;
+//	if (p->velX > 0)
+//		p->velX = 0;
+//}
+//if (p->velY > 0) {
+//	p->velY -= p->atrito;
+//	if (p->velY < 0)
+//		p->velY = 0;
+//}
+//if (p->velY < 0) {
+//	p->velY += p->atrito;
+//	if (p->velY > 0)
+//		p->velY = 0;
+//}
