@@ -54,7 +54,7 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key){
 
 //Verifica as teclas que estao sendo precionada, a variavel key eh reponsavel por
-//armazenar essas teclas
+//armazenar essas teclas.
 	if (key == ' ') {
 		player.Vivo = true;
 	}
