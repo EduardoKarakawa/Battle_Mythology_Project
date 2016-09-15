@@ -3,7 +3,7 @@
 #include "ofMain.h"
 #include <string>
 
-#define MAXSPEED 10
+#define MAXSPEED 3
 #define PLAYERATRITO 0.3f
 #define PLAYERSPEED 0.5f
 
@@ -19,6 +19,7 @@ struct PlayerType {
 };
 
 struct KeyInput {
+	bool mov = true;
 	bool Up = false;
 	bool Down = false;
 	bool Left = false;
@@ -157,8 +158,13 @@ class ofApp : public ofBaseApp{
 		}
 
 
-		void Collision(PlayerType *ply, ofImage *imag) {
-			//if(ply->posicao.distance())
+		bool Collision(PlayerType *ply, BackgroundType *imag, ofPoint mnd) {
+			if (((mnd.x + imag->pos.x) < ply->posicao.x) && ((mnd.x + imag->pos.x + imag->sprite.getWidth()) > ply->posicao.x)) {
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 
 
@@ -206,23 +212,3 @@ class ofApp : public ofBaseApp{
 			atualizando->pos.y = atualizando->sprite.getHeight() / 2 - Mundo.y + y;
 		}
 };
-//if (p->velX > 0) {
-//	p->velX -= p->atrito;
-//	if (p->velX < 0)
-//		p->velX = 0;
-//}
-//if (p->velX < 0) {
-//	p->velX += p->atrito;
-//	if (p->velX > 0)
-//		p->velX = 0;
-//}
-//if (p->velY > 0) {
-//	p->velY -= p->atrito;
-//	if (p->velY < 0)
-//		p->velY = 0;
-//}
-//if (p->velY < 0) {
-//	p->velY += p->atrito;
-//	if (p->velY > 0)
-//		p->velY = 0;
-//}
