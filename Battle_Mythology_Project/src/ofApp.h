@@ -3,9 +3,9 @@
 #include "ofMain.h"
 #include <string>
 
-#define MAXSPEED 3
-#define PLAYERATRITO 0.3f
-#define PLAYERSPEED 0.5f
+#define MAXSPEED 10
+#define PLAYERATRITO 0.1f
+#define PLAYERSPEED 1.f
 
 struct PlayerType {
 	ofImage Sprite;
@@ -20,15 +20,20 @@ struct PlayerType {
 
 struct KeyInput {
 	bool mov = true;
+	bool Up_Disable = false;
 	bool Up = false;
+	bool Down_Disable = false;
 	bool Down = false;
+	bool Left_Disable = false;
 	bool Left = false;
+	bool Right_Disable = false;
 	bool Right = false;
 };
 
 struct BackgroundType {
 	ofPoint pos;
 	ofImage sprite;
+	int pivo;
 };
 
 
@@ -142,7 +147,7 @@ class ofApp : public ofBaseApp{
 		
 
 		void SpeedPlayer(PlayerType *ply, KeyInput *tecla) {
-		//Funcao que incrementa 
+		//Funcao que incrementa a velocidade do player gradualmente
 			if (ply->VelX < MAXSPEED && tecla->Right) {
 				ply->VelX+= PLAYERSPEED;
 			}
@@ -158,28 +163,25 @@ class ofApp : public ofBaseApp{
 		}
 
 
-		bool Collision(PlayerType *ply, BackgroundType *imag, ofPoint mnd) {
-			if (((mnd.x + imag->pos.x) < ply->posicao.x) && ((mnd.x + imag->pos.x + imag->sprite.getWidth()) > ply->posicao.x)) {
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-
-
 		void MovPlayer(PlayerType *ply, KeyInput *tecla, ofPoint *mnd) {
+
+			//Atualiza da velocidade que do player
 			SpeedPlayer(ply, tecla);
-				mnd->x += ply->VelX;
-				mnd->y += ply->VelY;
-				//ply->posicao.x += ply->VelX;
-				//ply->posicao.y += ply->VelY;
+
+			//Subtrai a velocidade de Mundo para o mundo ser desenhado no lugar certo
+				mnd->x -= ply->VelX;
+				mnd->y -= ply->VelY;
+			//Soma na posição do player para ele andar no mundo
+				ply->posicao.x += ply->VelX;
+				ply->posicao.y += ply->VelY;
+			//Reduz a velocidade gradualmente do player quando ele nao estiver andando
 				if (ply->Acao == "idle");
 					DecreVelo(ply);
 		}
 
 
 		void DecreVelo(PlayerType *ply) {
+			//Função de atrito do personagem, ela faz o personagem ir reduzindo de velocidade gradualmente quando estiver parando de andar
 			if (ply->VelX > 0) {
 				ply->VelX -= PLAYERATRITO;
 				if (ply->VelX < 0) {
@@ -207,8 +209,53 @@ class ofApp : public ofBaseApp{
 		}
 
 
-		void RefreshWorld(BackgroundType *atualizando, int x, int y) {
-			atualizando->pos.x = atualizando->sprite.getWidth() / 2 - Mundo.x + x;
-			atualizando->pos.y = atualizando->sprite.getHeight() / 2 - Mundo.y + y;
+		void ColisaoPlayer(PlayerType *ply, BackgroundType *obstaculo, ofPoint *mnd, KeyInput *tecla) {
+
+			//Calcula a distancia entre os dois objetos
+			float distancia = obstaculo->sprite.getWidth() / 2 + ply->Sprite.getWidth() / 2;
+
+			//Verifica se o player esta encostando ou embaixo do objeto
+			if (obstaculo->pos.distance(ply->posicao) < distancia) {
+				
+				/*Desabilida os inputs de direção para impedir o que o jogador ande para baixo do
+				objeto, mas deixa liberado as teclas que tirao ele de baixo do objeto*/
+				if (obstaculo->pos.x < ply->posicao.x) {
+					if(ply->VelX < 0)
+						ply->VelX = 0;
+					tecla->Left_Disable = true;
+					tecla->Left = false;
+				}
+
+				if (obstaculo->pos.x > ply->posicao.x) {
+					if (ply->VelX > 0)
+						ply->VelX = 0;
+					tecla->Right_Disable = true;
+					tecla->Right = false;
+				}
+
+				if (obstaculo->pos.y < ply->posicao.y) {
+					if (ply->VelY < 0)
+						ply->VelY = 0;
+					tecla->Up_Disable = true;
+					tecla->Up = false;
+				}
+
+				if (obstaculo->pos.y > ply->posicao.y) {
+					if (ply->VelY > 0)
+						ply->VelY = 0;
+					tecla->Down_Disable = true;
+					tecla->Down = false;
+				}
+			}
+
+
+			/*Caso o player não estaja encostando em nada, nenhuma tecla de movimentação é travada*/
+			else {
+				tecla->Up_Disable = false;
+				tecla->Down_Disable = false;
+				tecla->Left_Disable = false;
+				tecla->Right_Disable = false;
+			}
 		}
+
 };
